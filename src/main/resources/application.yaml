@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: reserva-estoque
+
+  datasource:
+    url: ${JDBC_URL:jdbc:postgresql://localhost:5432/estoque}
+    username: ${JDBC_USER:estoque}
+    password: ${JDBC_PASSWORD:estoque}
+    hikari:
+      # Pool pequeno de proposito: e o que torna visivel o efeito do lock pessimista.
+      # Cada transacao esperando por um lock segura uma conexao, e com o pool esgotado
+      # requisicoes que nem tocam no produto disputado passam a falhar.
+      maximum-pool-size: ${POOL:10}
+      connection-timeout: 5000
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    open-in-view: false
+
+  sql:
+    init:
+      mode: always
+
+estoque:
+  # Cinco tentativas antes de desistir. O numero certo depende da contencao medida:
+  # com pouca disputa, uma segunda tentativa quase sempre resolve; com muita, o retry
+  # vira parte do problema. Ver ADR 0002.
+  maximo-de-tentativas: 5
+
+logging:
+  level:
+    io.github.vmarins2005.estoque: INFO
